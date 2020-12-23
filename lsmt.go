@@ -54,10 +54,10 @@ func (t *LSMTree) Get(key string) (string, error) {
   t.drwm.RLock()
   defer t.drwm.RUnlock()
   for _, d := range t.diskFiles {
-    v, err := d.Search(key)
+    e, err := d.Search(key)
     if err == nil {
       // Found in disk
-      return v, nil
+      return e.Value, nil
     }
   }
   return "", fmt.Errorf("key %s not found", key)
@@ -104,17 +104,20 @@ func compact(d1, d2 DiskFile) DiskFile {
   elems2 := d2.AllElements()
   size := min(len(elems1), len(elems2))
   var newElems []Element
-  for i := 0; i < size; i ++ {
-    e1 := elems1[i]
-    e2 := elems2[i]
+  var i1, i2 int
+  for i1 < size && i2 < size {
+    e1 := elems1[i1]
+    e2 := elems2[i2]
     if e1.Key < e2.Key {
       newElems = append(newElems, e1)
+      i1++
     } else {
       newElems = append(newElems, e2)
+      i2++
     }
   }
-  newElems = append(newElems, elems1[size:]...)
-  newElems = append(newElems, elems2[size:]...)
+  newElems = append(newElems, elems1[i1:len(elems1)]...)
+  newElems = append(newElems, elems2[i2:len(elems2)]...)
   return NewDiskFile(newElems)
 }
 
