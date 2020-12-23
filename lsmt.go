@@ -2,6 +2,7 @@ package lsmt
 
 import (
   "fmt"
+  "log"
   "sync"
   "time"
 )
@@ -33,6 +34,7 @@ func (t *LSMTree) Put(key, value string) {
   Upsert(&(t.tree), Element{Key: key, Value: value})
   if t.tree.Size >= t.flushThreshold && t.treeInFlush == nil {
     // Trigger flush.
+    log.Printf("triggering flush %v", Traverse(t.tree))
     t.treeInFlush = t.tree
     t.tree = nil
     go t.flush()
@@ -102,6 +104,7 @@ func (t *LSMTree) compactService() {
 func compact(d1, d2 DiskFile) DiskFile {
   elems1 := d1.AllElements()
   elems2 := d2.AllElements()
+  log.Printf("compacting d1: %v; d2: %v", elems1, elems2)
   size := min(len(elems1), len(elems2))
   var newElems []Element
   var i1, i2 int
@@ -111,8 +114,13 @@ func compact(d1, d2 DiskFile) DiskFile {
     if e1.Key < e2.Key {
       newElems = append(newElems, e1)
       i1++
-    } else {
+    } else if e1.Key > e2.Key {
       newElems = append(newElems, e2)
+      i2++
+    } else {
+      // d1 is assumed to be older than d2.
+      newElems = append(newElems, e2)
+      i1++
       i2++
     }
   }

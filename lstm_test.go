@@ -84,3 +84,23 @@ func TestFlushedToDisk(t *testing.T) {
     }
   }
 }
+
+func TestCompactionCollapse(t *testing.T) {
+  t.Parallel()
+  tree := NewLSMTree(1)
+  tree.Put("1", "One")
+  time.Sleep(time.Second)
+  tree.Put("1", "ONE")
+  // Wait for flush and compaction.
+  time.Sleep(3 * time.Second)
+  if len(tree.diskFiles) != 1 {
+    t.Errorf("got disk file size %d; want 1", len(tree.diskFiles))
+  }
+  if len(tree.diskFiles) == 1 {
+    got := tree.diskFiles[0].AllElements()
+    want := []Element{{Key: "1", Value: "ONE"}}
+    if !reflect.DeepEqual(want, got) {
+      t.Errorf("got result %v; want %v", got, want)
+    }
+  }
+}
