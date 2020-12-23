@@ -28,15 +28,18 @@ func NewTree(elems []Element) *TreeNode {
   return root
 }
 
-func Insert(tree **TreeNode, elem Element) {
+func Upsert(tree **TreeNode, elem Element) {
   if *tree == nil {
-    *tree = &TreeNode{Elem: elem}
-  } else if elem.Key <= (*tree).Elem.Key {
-    Insert(&((*tree).Left), elem)
+    *tree = &TreeNode{Elem: elem, Size: 1}
+  } else if elem.Key < (*tree).Elem.Key {
+    Upsert(&((*tree).Left), elem)
+    (*tree).Size++
+  } else if elem.Key > (*tree).Elem.Key {
+    Upsert(&((*tree).Right), elem)
+    (*tree).Size++
   } else {
-    Insert(&((*tree).Right), elem)
+    (*tree).Elem.Value = elem.Value
   }
-  (*tree).Size++
 }
 
 func Find(tree *TreeNode, key string) (Element, error) {

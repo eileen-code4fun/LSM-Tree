@@ -30,7 +30,7 @@ func NewLSMTree(flushThreshold int) *LSMTree {
 func (t *LSMTree) Put(key, value string) {
   t.rwm.Lock()
   defer t.rwm.Unlock()
-  Insert(&(t.tree), Element{Key: key, Value: value})
+  Upsert(&(t.tree), Element{Key: key, Value: value})
   if t.tree.Size >= t.flushThreshold && t.treeInFlush == nil {
     // Trigger flush.
     t.treeInFlush = t.tree

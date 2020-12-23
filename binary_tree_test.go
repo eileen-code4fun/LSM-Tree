@@ -37,7 +37,7 @@ func TestBinaryTree(t *testing.T) {
     t.Errorf("got elem %v; want not found", e)
   }
   newElem := Element{Key: "6.5", Value: "Six Point Five"}
-  Insert(&tree, newElem)
+  Upsert(&tree, newElem)
   got := Traverse(tree)
   var expected []Element
   expected = append(expected, elems[0:6]...)
@@ -48,6 +48,11 @@ func TestBinaryTree(t *testing.T) {
   }
   if !reflect.DeepEqual(expected, got) {
     t.Errorf("traverse got %v; want %v", got, expected)
+  }
+  // Update a key.
+  Upsert(&tree, Element{Key: "1", Value: "ONE"})
+  if e, err := Find(tree, "1"); err != nil || e.Value != "ONE" {
+    t.Errorf("got key 1 value %s error %v; want ONE", e.Value, err)
   }
 }
 
